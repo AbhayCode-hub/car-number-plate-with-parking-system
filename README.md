@@ -78,10 +78,17 @@ http://localhost:5000
 Endpoints:
 
 /stream → Live video
+
 /events → Plate detection events
+
 /api/start → Start ANPR
+
 /api/stop → Stop ANPR
+
 /api/records → Recent detections
+
 /api/parking_all → Parking log
+
 /api/status → Status
+
 /api/stats → Stats
