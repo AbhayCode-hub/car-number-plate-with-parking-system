@@ -41,6 +41,47 @@ Stores detections and parking logs.
 ## 📦 Installation
 
 ### 1. Clone the repository
-```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+
+git clone https://github.com/AbhayCode-hub/car-number-plate-with-parking-system.git
+
+cd car-number-plate-with-parking-system
+
+2. Create a virtual environment
+
+python -m venv venv
+
+3. Activate it
+
+For Windows
+
+venv\Scripts\activate
+
+For Linux/macOS
+
+source venv/bin/activate
+
+4. Install dependencies
+
+pip install -r requirements.txt
+
+▶️ Running the Backend
+Make sure your best.pt model is in the root folder.
+
+Start the server:
+
+python server_stream.py
+
+Backend will launch at:
+
+http://localhost:5000
+
+Endpoints:
+
+/stream → Live video
+/events → Plate detection events
+/api/start → Start ANPR
+/api/stop → Stop ANPR
+/api/records → Recent detections
+/api/parking_all → Parking log
+/api/status → Status
+/api/stats → Stats
