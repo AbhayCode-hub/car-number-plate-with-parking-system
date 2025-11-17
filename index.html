@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlateWise - Advanced ANPR System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0B1622 0%, #1a1f2e 100%);
+            color: #E5E7EB;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+            padding: 28px 0;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            border-right: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .logo {
+            padding: 0 28px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 30px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .nav-menu {
+            padding: 0 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #94A3B8;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .nav-item:hover {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38BDF8;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            color: white;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .nav-item-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 14px;
+            font-size: 20px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 280px;
+            padding: 20px 28px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .stat-label {
+            color: #94A3B8;
+        }
+
+        .stat-value {
+            color: #38BDF8;
+            font-weight: 700;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 32px 40px;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        .page-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #F1F5F9, #94A3B8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 28px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(56, 189, 248, 0.2);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Camera Feed */
+        .camera-feed-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #0B1622;
+            border: 2px solid rgba(56, 189, 248, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-feed-container.active {
+            border-color: #38BDF8;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+        }
+
+        .camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .feed-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .feed-icon {
+            font-size: 72px;
+            opacity: 0.2;
+        }
+
+        .feed-text {
+            color: #64748B;
+            font-size: 16px;
+        }
+
+        .scanning-overlay {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #38BDF8, transparent);
+            top: 0;
+            animation: scan 2.5s linear infinite;
+            display: none;
+        }
+
+        .camera-feed-container.active .scanning-overlay {
+            display: block;
+        }
+
+        @keyframes scan {
+            from { top: 0; }
+            to { top: 100%; }
+        }
+
+        /* Detection Card */
+        .plate-display {
+            font-size: 42px;
+            font-weight: 800;
+            color: #38BDF8;
+            letter-spacing: 6px;
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(14, 165, 233, 0.15));
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+
+        .plate-snapshot {
+            width: 100%;
+            height: 140px;
+            background: #0B1622;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            font-size: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .plate-snapshot img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .info-label {
+            color: #94A3B8;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .confidence {
+            color: #10B981 !important;
+        }
+
+        /* Control Buttons */
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            color: white;
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.6);
+        }
+
+        .btn-primary.active {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+
+        .btn-secondary {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .btn-primary.loading .spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Records Section */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px 14px 50px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #38BDF8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748B;
+            font-size: 18px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        select, .btn-action {
+            padding: 14px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, .btn-action:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #38BDF8;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            border: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tables */
+        .table-container {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        th {
+            padding: 18px 24px;
+            text-align: left;
+            font-weight: 600;
+            color: #94A3B8;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tbody tr {
+            border-top: 1px solid rgba(56, 189, 248, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        td {
+            padding: 18px 24px;
+            color: #E5E7EB;
+            font-size: 15px;
+        }
+
+        .plate-cell {
+            font-weight: 700;
+            color: #38BDF8;
+            font-size: 17px;
+            letter-spacing: 2px;
+        }
+
+        .confidence-cell {
+            color: #10B981;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .badge.in {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+
+        .badge.out {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+        }
+
+        .snapshot-thumb {
+            width: 80px;
+            height: 50px;
+            background: #0B1622;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .snapshot-thumb:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .snapshot-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .page-btn {
+            padding: 10px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #38BDF8;
+            border-color: #38BDF8;
+            transform: translateY(-2px);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Parking Section */
+        .parking-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            color: white;
+            padding: 18px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideIn 0.4s ease;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            min-width: 300px;
+        }
+
+        .notification.success {
+            border-color: #10B981;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+        }
+
+        .notification.error {
+            border-color: #EF4444;
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid, .parking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 240px;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1>
+                <div class="logo-icon">🚗</div>
+                PlateWise
+            </h1>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-item active" data-page="dashboard">
+                <span class="nav-item-icon">📊</span>
+                Dashboard
+            </div>
+            <div class="nav-item" data-page="records">
+                <span class="nav-item-icon">📋</span>
+                Records
+            </div>
+            <div class="nav-item" data-page="parking">
+                <span class="nav-item-icon">🅿️</span>
+                Parking
+            </div>
+        </nav>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Total Detections</span>
+                <span class="stat-value" id="totalDetections">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Active Parking</span>
+                <span class="stat-value" id="activeParking">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">System Status</span>
+                <span class="stat-value" id="systemStatus">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Page -->
+        <div class="page active" id="dashboard">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Camera Feed -->
+                <div class="card">
+                    <h3>📹 Live Camera Feed</h3>
+                    <div class="camera-feed-container" id="feedContainer">
+                        <div class="scanning-overlay"></div>
+                        <img id="cameraFeed" class="camera-feed" src="http://localhost:5000/stream" style="display:none;" onerror="this.style.display='none'; document.getElementById('feedPlaceholder').style.display='flex';">
+                        <div class="feed-placeholder" id="feedPlaceholder">
+                            <div class="feed-icon">📹</div>
+                            <div class="feed-text">Camera feed inactive</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest Detection -->
+                <div class="card">
+                    <h3>🎯 Latest Detection</h3>
+                    <div class="plate-display" id="plateDisplay">NO DETECTION</div>
+                    <div class="plate-snapshot" id="plateSnapshot">
+                        📷 Plate Snapshot
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <div class="info-label">Confidence</div>
+                            <div class="info-value confidence" id="confidence">--</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Timestamp</div>
+                            <div class="info-value" id="timestamp">--</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="startStopBtn">
+                            <span class="spinner"></span>
+                            <span id="btnText">Start Recognition</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Records Page -->
+        <div class="page" id="records">
+            <div class="page-header">
+                <h2>Detection Records</h2>
+            </div>
+
+            <div class="controls-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by plate number...">
+                </div>
+                <div class="filter-group">
+                    <select id="confidenceFilter">
+                        <option value="">All Confidence</option>
+                        <option value="high">High (>90%)</option>
+                        <option value="medium">Medium (70-90%)</option>
+                        <option value="low">Low (<70%)</option>
+                    </select>
+                    <button class="btn-action" id="downloadBtn">
+                        📥 Download CSV
+                    </button>
+                    <button class="btn-action" id="refreshBtn">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plate Number</th>
+                            <th>Confidence</th>
+                            <th>Timestamp</th>
+                            <th>Snapshot</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px; color: #64748B;">Loading records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Parking Page -->
+        <div class="page" id="parking">
+            <div class="page-header">
+                <h2>Parking Management</h2>
+            </div>
+
+            <div class="parking-grid">
+                <!-- Currently Inside -->
+                <div class="card">
+                    <div class="section-title">
+                        🟢 Vehicles Currently Inside
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Plate Number</th>
+                                    <th>Entry Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parkingInsideBody">
+                                <tr><td colspan="2" style="text-align: center; padding: 30px; color: #64748B;">No vehicles inside</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Exits -->
+                <div class="card">
+                    <div class="section-title">
+                        🔴 Recent Exits
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Plate Number</th>
+                                    <th>Exit Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parkingExitsBody">
+                                <tr><td colspan="2" style="text-align: center; padding: 30px; color: #64748B;">No recent exits</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full History -->
+            <div class="card" style="margin-top: 28px;">
+                <div class="section-title">
+                    📜 Complete Parking History
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Plate Number</th>
+                                <th>Entry Time</th>
+                                <th>Exit Time</th>
+                                <th>Status / Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parkingHistoryBody">
+                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: #64748B;">No parking history</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND = 'http://localhost:5000';
+        
+        let allRecords = [];
+        let currentPage = 1;
+        const recordsPerPage = 10;
+        let filteredData = [];
+        let isRecognizing = false;
+        let parkingCooldowns = {}; // Prevents rapid duplicate detections
+        const DETECTION_COOLDOWN = 500; // 3 seconds cooldown
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.dataset.page;
+                
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(page).classList.add('active');
+            });
+        });
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Format functions
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return '--';
+            if (timestamp.includes('_')) {
+                const year = timestamp.substring(0, 4);
+                const month = timestamp.substring(4, 6);
+                const day = timestamp.substring(6, 8);
+                const hour = timestamp.substring(9, 11);
+                const min = timestamp.substring(11, 13);
+                return `${month}/${day}/${year} ${hour}:${min}`;
+            }
+            return new Date(timestamp).toLocaleString();
+        }
+
+        function formatPlateText(text) {
+            if (!text) return 'NO DATA';
+            text = text.toString().toUpperCase();
+            if (text.length < 4) return text;
+            let formatted = text.substring(0, 2);
+            if (text.length > 2) formatted += ' ' + text.substring(2, 4);
+            if (text.length > 4) formatted += ' ' + text.substring(4, 6);
+            if (text.length > 6) formatted += ' ' + text.substring(6);
+            return formatted;
+        }
+
+        // Calculate duration between entry and exit
+        function calculateDuration(entry, exit) {
+            try {
+                let entryTime, exitTime;
+                
+                if (entry.includes('_')) {
+                    const e = entry.split('_');
+                    entryTime = new Date(
+                        parseInt(e[0].substring(0, 4)),
+                        parseInt(e[0].substring(4, 6)) - 1,
+                        parseInt(e[0].substring(6, 8)),
+                        parseInt(e[1].substring(0, 2)),
+                        parseInt(e[1].substring(2, 4)),
+                        parseInt(e[1].substring(4, 6))
+                    );
+                } else {
+                    entryTime = new Date(entry);
+                }
+                
+                if (exit.includes('_')) {
+                    const x = exit.split('_');
+                    exitTime = new Date(
+                        parseInt(x[0].substring(0, 4)),
+                        parseInt(x[0].substring(4, 6)) - 1,
+                        parseInt(x[0].substring(6, 8)),
+                        parseInt(x[1].substring(0, 2)),
+                        parseInt(x[1].substring(2, 4)),
+                        parseInt(x[1].substring(4, 6))
+                    );
+                } else {
+                    exitTime = new Date(exit);
+                }
+                
+                const diffMs = exitTime - entryTime;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return '< 1 min';
+                if (diffMins < 60) return `${diffMins} min`;
+                
+                const hours = Math.floor(diffMins / 60);
+                const mins = diffMins % 60;
+                return `${hours}h ${mins}m`;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // SSE Events for real-time updates
+        let eventSource;
+        function connectSSE() {
+            try {
+                eventSource = new EventSource(BACKEND + '/events');
+                
+                eventSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        updateLatestDetection(data);
+                        
+                        // Toggle parking entry/exit
+                        const plate = data.plate || data.plate_text;
+                        const timestamp = data.timestamp;
+                        updateParking(plate, timestamp);
+                        
+                        loadRecords();
+                        updateStats();
+                    } catch (e) {
+                        console.log('SSE parse error:', e);
+                    }
+                };
+
+                eventSource.onerror = function() {
+                    console.log('SSE connection error, retrying...');
+                    setTimeout(connectSSE, 5000);
+                };
+            } catch (e) {
+                console.log('SSE not available, using polling');
+                setInterval(pollForUpdates, 3000);
+            }
+        }
+
+        // Fallback polling
+        async function pollForUpdates() {
+            await loadRecords();
+            await updateStats();
+        }
+
+        // Update latest detection
+        function updateLatestDetection(data) {
+            const plateDisplay = document.getElementById('plateDisplay');
+            const confidence = document.getElementById('confidence');
+            const timestamp = document.getElementById('timestamp');
+            const snapshot = document.getElementById('plateSnapshot');
+            
+            plateDisplay.textContent = formatPlateText(data.plate || data.plate_text);
+            confidence.textContent = ((data.confidence || data.plate_conf) * 100).toFixed(1) + '%';
+            timestamp.textContent = formatTimestamp(data.timestamp);
+            
+            if (data.plate_image || data.plate_crop_path) {
+                const imgPath = data.plate_image || `${BACKEND}/api/image/${encodeURIComponent(data.plate_crop_path)}`;
+                snapshot.innerHTML = `<img src="${imgPath}" onerror="this.parentElement.innerHTML='📷 Plate Snapshot'">`;
+            }
+
+            showNotification(`New plate detected: ${formatPlateText(data.plate || data.plate_text)}`, 'success');
+        }
+
+        // Parking Management - Toggle entry/exit with cooldown
+        async function updateParking(plate, timestamp) {
+            if (!plate) return;
+            
+            const now = Date.now();
+            const lastDetection = parkingCooldowns[plate] || 0;
+            
+            // Ignore if same plate detected within cooldown period
+            if (now - lastDetection < DETECTION_COOLDOWN) {
+                console.log(`[parking] Ignoring duplicate detection for ${plate} (cooldown active)`);
+                return;
+            }
+            
+            // Update cooldown timestamp
+            parkingCooldowns[plate] = now;
+            
+            // Send toggle event to backend
+            try {
+                const response = await fetch(`${BACKEND}/api/parking_event`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        plate: plate, 
+                        timestamp: timestamp 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show notification based on action
+                    const action = data.action || 'UPDATED';
+                    const color = action === 'ENTRY' ? 'success' : 'info';
+                    const emoji = action === 'ENTRY' ? '🟢' : '🔴';
+                    showNotification(`${emoji} ${formatPlateText(plate)}: ${action}`, color);
+                    
+                    // Reload parking data to update UI
+                    await loadParkingData();
+                } else {
+                    console.error('[parking] Event failed:', data.error || data.message);
+                }
+            } catch (error) {
+                console.error('[parking] Save error:', error);
+            }
+        }
+
+        // Load all parking data
+        async function loadParkingData() {
+            try {
+                const response = await fetch(`${BACKEND}/api/parking_all`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('[parking] Load failed');
+                    return;
+                }
+
+                // Vehicles currently inside
+                const insideBody = document.getElementById('parkingInsideBody');
+                if (data.inside && data.inside.length > 0) {
+                    insideBody.innerHTML = data.inside.map(r => `
+                        <tr>
+                            <td class="plate-cell">${formatPlateText(r.plate)}</td>
+                            <td>${formatTimestamp(r.entry)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    insideBody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 30px; color: #64748B;">No vehicles inside</td></tr>';
+                }
+
+                // Recent exits (last 5)
+                const exitsBody = document.getElementById('parkingExitsBody');
+                const recentExits = (data.history || []).filter(r => r.exit).slice(0, 5);
+                if (recentExits.length > 0) {
+                    exitsBody.innerHTML = recentExits.map(r => `
+                        <tr>
+                            <td class="plate-cell">${formatPlateText(r.plate)}</td>
+                            <td>${formatTimestamp(r.exit)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    exitsBody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 30px; color: #64748B;">No recent exits</td></tr>';
+                }
+
+                // Complete history
+                const historyBody = document.getElementById('parkingHistoryBody');
+                if (data.history && data.history.length > 0) {
+                    historyBody.innerHTML = data.history.map(r => {
+                        const duration = r.exit ? calculateDuration(r.entry, r.exit) : null;
+                        return `
+                        <tr>
+                            <td class="plate-cell">${formatPlateText(r.plate)}</td>
+                            <td>${formatTimestamp(r.entry)}</td>
+                            <td>${r.exit ? formatTimestamp(r.exit) : '<span style="color: #10B981; font-weight: 600;">Currently Inside</span>'}</td>
+                            <td>
+                                <span class="badge ${r.exit ? 'out' : 'in'}">${r.exit ? 'OUT' : 'IN'}</span>
+                                ${duration ? `<span style="color: #94A3B8; font-size: 12px; margin-left: 8px;">(${duration})</span>` : ''}
+                            </td>
+                        </tr>
+                    `}).join('');
+                } else {
+                    historyBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #64748B;">No parking history</td></tr>';
+                }
+
+                // Update stats
+                document.getElementById('activeParking').textContent = (data.inside || []).length;
+            } catch (error) {
+                console.error('[parking] Load error:', error);
+            }
+        }
+
+        // Load records
+        async function loadRecords() {
+            try {
+                const response = await fetch(`${BACKEND}/api/records`);
+                const data = await response.json();
+                
+                if (!data.success) throw new Error('Failed to load records');
+                
+                allRecords = data.records || [];
+                filteredData = [...allRecords];
+                
+                
+                
+                
+                renderRecords();
+                return true;
+            } catch (error) {
+                console.error('Error loading records:', error);
+                showNotification('Unable to connect to backend', 'error');
+                return false;
+            }
+        }
+
+        // Render records table
+        function renderRecords() {
+            const tbody = document.getElementById('recordsBody');
+            const start = (currentPage - 1) * recordsPerPage;
+            const end = start + recordsPerPage;
+            const pageData = filteredData.slice(start, end);
+            
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #64748B;">No records found</td></tr>';
+                renderPagination();
+                return;
+            }
+            
+            tbody.innerHTML = pageData.map(record => `
+                <tr>
+                    <td class="plate-cell">${formatPlateText(record.plate_text)}</td>
+                    <td class="confidence-cell">${Math.round((record.plate_conf || 0) * 100)}%</td>
+                    <td>${formatTimestamp(record.timestamp)}</td>
+                    <td>
+                        <div class="snapshot-thumb" onclick="viewImage('${record.plate_crop_path}')">
+                            <img src="${BACKEND}/api/image/${encodeURIComponent(record.plate_crop_path)}" 
+                                 onerror="this.parentElement.innerHTML='📷'">
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            renderPagination();
+        }
+
+        // View image modal
+        function viewImage(path) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                cursor: pointer;
+            `;
+            modal.innerHTML = `
+                <img src="${BACKEND}/api/image/${encodeURIComponent(path)}" 
+                     style="max-width: 90%; max-height: 90%; border-radius: 16px; box-shadow: 0 0 60px rgba(56, 189, 248, 0.5);">
+            `;
+            modal.onclick = () => modal.remove();
+            document.body.appendChild(modal);
+        }
+
+        // Pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = `
+                <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+            `;
+            
+            for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            if (totalPages > 7) {
+                html += `<span style="color: #64748B;">...</span>`;
+            }
+            
+            html += `
+                <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next ›</button>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderRecords();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Search and filter
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            applyFilters();
+        });
+
+        document.getElementById('confidenceFilter').addEventListener('change', function(e) {
+            applyFilters();
+        });
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const confidenceFilter = document.getElementById('confidenceFilter').value;
+            
+            filteredData = allRecords.filter(record => {
+                const matchesSearch = !searchTerm || 
+                    record.plate_text.toLowerCase().includes(searchTerm) ||
+                    formatPlateText(record.plate_text).toLowerCase().includes(searchTerm);
+                
+                let matchesConfidence = true;
+                if (confidenceFilter === 'high') {
+                    matchesConfidence = record.plate_conf > 0.90;
+                } else if (confidenceFilter === 'medium') {
+                    matchesConfidence = record.plate_conf >= 0.70 && record.plate_conf <= 0.90;
+                } else if (confidenceFilter === 'low') {
+                    matchesConfidence = record.plate_conf < 0.70;
+                }
+                
+                return matchesSearch && matchesConfidence;
+            });
+            
+            currentPage = 1;
+            renderRecords();
+        }
+
+        // Download CSV
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const headers = ['Plate Number', 'Confidence', 'Timestamp', 'Track ID'];
+            const rows = filteredData.map(r => [
+                formatPlateText(r.plate_text),
+                Math.round(r.plate_conf * 100) + '%',
+                formatTimestamp(r.timestamp),
+                r.track_id || 'N/A'
+            ]);
+            
+            const csv = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `anpr_records_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('CSV downloaded successfully', 'success');
+        });
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', async function() {
+            this.textContent = '⏳ Loading...';
+            await loadRecords();
+            await loadParkingData();
+            await updateStats();
+            this.textContent = '🔄 Refresh';
+            showNotification('Data refreshed', 'success');
+        });
+
+        // Start/Stop Recognition
+        document.getElementById('startStopBtn').addEventListener('click', async function() {
+            const btnText = document.getElementById('btnText');
+            const feedContainer = document.getElementById('feedContainer');
+            const feedPlaceholder = document.getElementById('feedPlaceholder');
+            const cameraFeed = document.getElementById('cameraFeed');
+            
+            isRecognizing = !isRecognizing;
+            
+            if (isRecognizing) {
+                this.classList.add('loading');
+                btnText.textContent = 'Starting...';
+                
+                try {
+                    const response = await fetch(`${BACKEND}/api/start`, { method: 'POST' });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.classList.remove('loading');
+                        this.classList.add('active');
+                        btnText.textContent = 'Stop Recognition';
+                        feedContainer.classList.add('active');
+                        feedPlaceholder.style.display = 'none';
+                        cameraFeed.style.display = 'block';
+                        document.getElementById('systemStatus').textContent = 'Active';
+                        showNotification('ANPR system started', 'success');
+                        connectSSE();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    console.error('Start error:', error);
+                    showNotification('Failed to start ANPR system', 'error');
+                    this.classList.remove('loading');
+                    btnText.textContent = 'Start Recognition';
+                    isRecognizing = false;
+                }
+            } else {
+                this.classList.add('loading');
+                btnText.textContent = 'Stopping...';
+                
+                try {
+                    await fetch(`${BACKEND}/api/stop`, { method: 'POST' });
+                    
+                    this.classList.remove('loading', 'active');
+                    btnText.textContent = 'Start Recognition';
+                    feedContainer.classList.remove('active');
+                    cameraFeed.style.display = 'none';
+                    feedPlaceholder.style.display = 'flex';
+                    document.getElementById('systemStatus').textContent = 'Ready';
+                    showNotification('ANPR system stopped', 'info');
+                    
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                } catch (error) {
+                    console.error('Stop error:', error);
+                    this.classList.remove('loading');
+                }
+            }
+        });
+
+        // Update stats
+        async function updateStats() {
+            try {
+                const response = await fetch(`${BACKEND}/api/stats`);
+                const data = await response.json();
+                
+                if (data.success && data.stats) {
+                    document.getElementById('totalDetections').textContent = data.stats.total_detections || allRecords.length;
+                }
+            } catch (error) {
+                document.getElementById('totalDetections').textContent = allRecords.length;
+            }
+        }
+
+        // Initialize
+        (async function init() {
+            await loadRecords();
+            await loadParkingData();
+            await updateStats();
+            
+            // Check if system is already running
+            try {
+                const response = await fetch(`${BACKEND}/api/status`);
+                const data = await response.json();
+                
+                if (data.running) {
+                    isRecognizing = true;
+                    const btn = document.getElementById('startStopBtn');
+                    btn.classList.add('active');
+                    document.getElementById('btnText').textContent = 'Stop Recognition';
+                    document.getElementById('feedContainer').classList.add('active');
+                    document.getElementById('feedPlaceholder').style.display = 'none';
+                    document.getElementById('cameraFeed').style.display = 'block';
+                    document.getElementById('systemStatus').textContent = 'Active';
+                    connectSSE();
+                }
+            } catch (error) {
+                console.log('Could not check system status');
+            }
+            
+            // Periodic updates
+            setInterval(loadParkingData, 10000);
+            setInterval(updateStats, 5000);
+        })();
+    </script>
+</body>
+</html>

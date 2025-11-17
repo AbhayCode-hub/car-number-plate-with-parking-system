@@ -1,0 +1,9 @@
+/
+├── server_stream.py        # Main backend
+├── best.pt                 # YOLO model
+├── requirements.txt
+├── README.md
+├── .gitignore
+└── outputs/
+    ├── plate_crops/
+    └── full_frames/

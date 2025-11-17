@@ -1,0 +1,12 @@
+flask
+flask-cors
+ultralytics
+numpy
+opencv-python
+easyocr
+torch
+torchvision
+torchaudio
+pillow
+requests
+pyyaml
